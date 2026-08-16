@@ -1,0 +1,2 @@
+mcschematic>=11.4.0
+nbtlib>=2.0.4
