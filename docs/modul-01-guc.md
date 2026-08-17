@@ -154,10 +154,16 @@ Her dalda sırayla: **gearbox** (x=28, ana hat üstünde) → **clutch** (x=29) 
 
 ## Basma yöntemi
 
-En kolayı **vanilla Structure Block**: `01_power.nbt` dosyasını
-`saves/<dünya>/generated/minecraft/structures/` altına koyup structure block'u
-LOAD moduna alın, isim `01_power`. Mod gerekmez, malzeme istemez, anında basar.
-Diğer yollar (WorldEdit / Schematicannon) için ana [README](../README.md).
+**Create'in kendi şematiği + Print aracı** (creative, ek mod yok, malzeme yok):
+
+1. `01_power.nbt` → `.minecraft/schematics/`
+2. Schematic Table + Empty Schematic → listeden `01_power` → yükle
+3. Schematic'i eline al, yere sağ tık (hayalet görünür)
+4. **Sol Alt** basılı tut → araç menüsünden **Print** seç
+5. **Sağ tık** → yapı anında basılır
+
+Alternatifler (vanilla Structure Block, WorldEdit, Schematicannon) için ana
+[README](../README.md).
 
 ## Paste sonrası kontrol listesi
 

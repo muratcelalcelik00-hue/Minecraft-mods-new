@@ -88,16 +88,38 @@ block sınırı 48×48×48'dir; modüller bu sınırın altında tutuluyor.
    yerde `-a` olmadan basmak motor boşluğu gibi boş kalması gereken yerleri
    de temizler.
 
-#### C) Create Schematicannon (`.nbt`, ek mod gerekmez)
+#### C) Create'in kendi şematiği — **Print** aracı (ek mod yok, malzeme yok, anında)
 
-1. `out/*.nbt` → `.minecraft/schematics/` (oyun klasörünün kökü, `config/` değil)
-2. **Schematic Table**'a boş bir Schematic koyup listeden `01_power` seçin ve yazdırın
-3. Yazılı Schematic'i elinize alıp sağ tıkla konumlandırın
-4. **Schematicannon**'a Schematic'i + barut (yakıt) + malzemeleri verin
+Create'in şematik sisteminde, **creative modda** Schematicannon'a hiç gerek
+olmadan yapıyı anında basan bir araç var: **Print**.
 
-> Bu yol yapıyı **gerçekten inşa eder**, yani tüm blokların malzemesi gerekir.
-> Creative'de test için topun yanına **Creative Crate** koyup malzeme
-> besleyebilirsiniz. Hızlı test için A veya B yolu çok daha pratik.
+1. `out/*.nbt` → `.minecraft/schematics/`
+   *(oyun klasörünün kökü, `config/` değil — Schematic Table'daki
+   **"Open Folder"** düğmesi tam bu klasörü açar)*
+2. Creative moda geçin. **Schematic Table** ve **Empty Schematic** alın.
+3. Table'a boş schematic'i koyun → listeden `01_power` seçin → yükleyin →
+   yazılı Schematic'i alın.
+4. Schematic'i elinize alın, yere **sağ tık** — yapının hayaleti görünür
+   (*Position* aracı).
+5. **Sol Alt** tuşunu basılı tutun → araç menüsü açılır → **Print**'i seçin.
+6. **Sağ tık** → yapı anında, tam haliyle basılır.
+
+Kaynak doğrulaması: `ToolType.getTools(creative)` listesine `PRINT` yalnız
+creative'de ekleniyor; `SchematicPlacePacket.handle()` `player.isCreative()`
+kontrolünden sonra tüm blokları block entity verisiyle birlikte tek seferde
+yerleştiriyor. Oyun içi açıklaması: *"Instantly places the structure in the
+world. [Right-Click] to confirm placement at the current location."*
+
+> **Not:** `creativePrintIncludesAir` ayarı varsayılan olarak **kapalı**, yani
+> Print havayı basmaz (WorldEdit'teki `//paste -a` gibi davranır). Boş/düz bir
+> alana basıyorsanız fark etmez. Dolu araziye basacaksanız
+> `config/create-server.toml` içinden açabilirsiniz.
+
+#### D) Create Schematicannon (`.nbt`) — yapıyı gerçekten inşa eder
+
+Aynı Schematic item'ı Schematicannon'a + barut + malzemeleri verirseniz top
+yapıyı blok blok inşa eder. Survival için doğru yol, ama **tüm blokların
+malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 
 ---
 
