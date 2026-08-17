@@ -277,3 +277,78 @@ blockstate'ten kendini kuruyor. `//paste` sonrası elle "düzeltme" gerekmez.
   `water_wheel.nbt`, `deployer/processing.nbt`, `funnels/intro.nbt`,
   `chute/downward.nbt`). Bunlar Create ekibinin "çalıştığını bildiği"
   yerleşimler olduğu için geometri kararlarında referans alındı.
+
+---
+
+## 9. Modül 2 (cevher işleme) doğrulamaları
+
+### Tarifler (`src/generated/resources/data/create/recipe/`)
+
+```json
+// crushing/raw_iron.json
+{"type":"create:crushing","ingredients":[{"tag":"c:raw_materials/iron"}],
+ "processing_time":400,
+ "results":[{"id":"create:crushed_raw_iron"},
+            {"chance":0.75,"id":"create:experience_nugget"}]}
+
+// splashing/crushed_raw_iron.json
+{"type":"create:splashing","ingredients":[{"item":"create:crushed_raw_iron"}],
+ "results":[{"count":9,"id":"minecraft:iron_nugget"},
+            {"chance":0.75,"id":"minecraft:redstone"}]}
+```
+
+Yani zincir: `raw iron → (crushing, 400 tick) → crushed raw iron → (splashing) →
+9 iron nugget + %75 redstone`.
+
+### Crushing Wheel çifti — `CrushingWheelBlock.updateControllers`
+
+```java
+BlockPos controllerPos = pos.relative(side);
+BlockPos otherWheelPos  = pos.relative(side, 2);
+...
+if (be.getSpeed() > 0) != (otherBE.getSpeed() > 0) && ... controllerShouldBeValid = true;
+if (otherState.getValue(AXIS) != state.getValue(AXIS)) controllerShouldExist = false;
+```
+
+* İki çark **aynı eksende** ve **aralarında 1 blok boşlukla** durur.
+* Boşluğa `create:crushing_wheel_controller` **kendiliğinden** oluşur — şematikte
+  oraya blok konmaz, hava bırakılır.
+* `side` ekseni çarkın dönme ekseninden farklı olmalı.
+* **Çarklar ters yönde dönmek zorunda.** Dişli ağı iki taraflıdır (bipartite):
+  aynı eksenli dişli ızgarasında iki nokta arasındaki yön farkı, manhattan
+  mesafesinin tek/çift olmasına bağlıdır. İki çarkın tahrik noktası her zaman
+  **çift** mesafede olduğu için, sadece dişliyle ters yön elde edilemez;
+  yön kıran bir eleman (gearshift veya gearbox) şart.
+
+### Fan işleme — `AirCurrent` + `AllFanProcessingTypes`
+
+Hava akımını **durduran** şey (`AirCurrent.getFlowLimit`):
+
+```java
+if (shouldAlwaysPass(state)) continue;          // create:fan_transparent tag'i
+VoxelShape shape = state.getCollisionShape(...);
+if (shape.isEmpty()) continue;                  // akışkanlar (su/lav) engel değil
+if (shape == Shapes.block()) return i;          // TAM blok akımı keser
+return Math.min(i + shapeDepth + 1/32d, max);   // kısmi blokta yüzeyde biter
+```
+
+**Bunun tasarıma etkisi:** fan YUKARI bakıp bandın altına konamaz. Bandın
+çarpışma kutusu tam blok olmadığı için akım bandın alt yüzeyinde biter,
+bandın ÜSTÜNDEKİ eşyalara ulaşmaz. Doğru kurulum: **fan yukarıdan aşağı bakar**,
+katalizör fanla bant arasındadır.
+
+Katalizör kuralları (`AllFanProcessingTypes.isValidAt`):
+
+| İşlem | Katalizör | Not |
+|---|---|---|
+| Splashing (yıkama) | su akışkanı | **waterlogged demir parmaklık** işe yarar: `create:fan_transparent` tag'inde olduğu için akımı kesmez, `getFluidState` su döndürür |
+| Blasting (eritme) | lav akışkanı **veya** yanan blaze burner | `!hasProperty(HEAT_LEVEL) \|\| heat.isAtLeast(FADING)` |
+
+Lav bu düzende kullanılamaz: fanın altındaki katalizör konumunda lavın altı
+hava olacağı için akıp gider. Bu yüzden eritme istasyonu **blaze burner** ile
+kurulur (fan_transparent tag'inde olduğu için akımı kesmez) — ve burner'ın
+yakıtı yine bir deployer ile beslenir.
+
+`create:fan_transparent` tag'i (doğrulandı): blaze_burner, lit_blaze_burner,
+sail_frame, andesite/brass/copper_bars, **minecraft:iron_bars**, copper_grate'ler,
+mangrove_roots, `#minecraft:campfires`, `#minecraft:fences`, `#minecraft:leaves`.

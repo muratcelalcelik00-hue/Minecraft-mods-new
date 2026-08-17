@@ -264,3 +264,39 @@ def belt(facing: str, part: str, slope: str = "horizontal", casing: bool = False
     Zincir en az 2 blok olmalı, yoksa initBelt bandı kırar.
     """
     return block("create:belt", facing=facing, part=part, slope=slope, casing=casing)
+
+
+# --------------------------------------------------------------------------
+# Modül 2: işleme blokları
+# --------------------------------------------------------------------------
+
+
+def crushing_wheel(axis: str) -> str:
+    """CrushingWheelBlock -> axis.
+
+    Çift kurulumu (CrushingWheelBlock.updateControllers):
+      - iki çark AYNI eksende ve aralarında 1 blok boşlukla
+        (otherWheelPos = pos.relative(side, 2))
+      - `side` ekseni çarkın dönme ekseninden FARKLI olmalı
+      - aradaki boşlukta `create:crushing_wheel_controller` KENDİLİĞİNDEN oluşur
+        (biz oraya blok koymayız, hava bırakırız)
+      - çarklar TERS yönde dönmeli: (speed > 0) != (otherSpeed > 0)
+    """
+    return block("create:crushing_wheel", axis=axis)
+
+
+def encased_fan(facing: str) -> str:
+    """EncasedFanBlock: DirectionalKineticBlock -> facing.
+
+    İşlem tipi, hava akımının geçtiği bloktan gelir
+    (AllFanProcessingTypes.isValidAt önce getFluidState'e bakar):
+      su   -> splashing (yıkama)
+      lav  -> blasting  (eritme)
+    Fan katı bir blok olduğu için, YUKARI bakan bir fanın üstündeki su/lav
+    akıp gitmez; işlenecek eşya da onun bir üstündeki bantta durur.
+    """
+    return block("create:encased_fan", facing=facing)
+
+
+LAVA = "minecraft:lava[level=0]"
+REDSTONE_BLOCK = "minecraft:redstone_block"
