@@ -1,6 +1,7 @@
 # Modül 1 — Güç
 
-`out/01_power.schem` · **32 × 14 × 30** blok (X × Y × Z) · 542 blok
+`out/01_power.schem` (WorldEdit) · `out/01_power.nbt` (Structure Block / Create)
+**32 × 14 × 30** blok (X × Y × Z)
 
 Level 18 boiler, 18 steam engine ve modül başına clutch + gearshift içeren ana
 şaft hattı. Su ve yakıt beslemesi modülün içindedir; dışarıdan **sadece yakıt**
@@ -150,6 +151,13 @@ Her dalda sırayla: **gearbox** (x=28, ana hat üstünde) → **clutch** (x=29) 
 ```
 
 ---
+
+## Basma yöntemi
+
+En kolayı **vanilla Structure Block**: `01_power.nbt` dosyasını
+`saves/<dünya>/generated/minecraft/structures/` altına koyup structure block'u
+LOAD moduna alın, isim `01_power`. Mod gerekmez, malzeme istemez, anında basar.
+Diğer yollar (WorldEdit / Schematicannon) için ana [README](../README.md).
 
 ## Paste sonrası kontrol listesi
 

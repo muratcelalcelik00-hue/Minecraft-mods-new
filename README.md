@@ -11,16 +11,24 @@ sonra eklenecek.
 
 ## Çıktı formatı
 
+Her modül **iki formatta** üretilir:
+
+| Dosya | Format | Nerede kullanılır |
+|---|---|---|
+| `out/*.schem` | **Sponge Schematic v2** (NBT kökü `Schematic`, `Version: 2`) | WorldEdit 7.3.x (`//schem load` + `//paste`) |
+| `out/*.nbt` | **Vanilla structure** (`size`/`blocks`/`palette`/`DataVersion`) | Vanilla Structure Block **veya** Create Schematic Table + Schematicannon |
+
 | | |
 |---|---|
-| Format | **Sponge Schematic v2** (NBT kökü `Schematic`, `Version: 2`) |
-| Kütüphane | [`mcschematic`](https://pypi.org/project/mcschematic/) (v2 yazar), okuma/denetim için `nbtlib` |
+| Kütüphane | [`mcschematic`](https://pypi.org/project/mcschematic/) (Sponge v2 yazar), structure `.nbt` için `nbtlib` |
 | DataVersion | **3955** (Minecraft 1.21.1) |
-| Uyumluluk | WorldEdit 7.3.x — v2 ve v3'ü de okur |
 | Blok verisi | Tam BlockState (`create:belt[facing=east,part=start,slope=horizontal,casing=false]` gibi) |
-| Block entity | Gereken yerlerde SNBT olarak (`BlockEntities` listesine yazılır) |
+| Block entity | Gereken yerlerde; `.nbt` tarafında BE tipi registry adıyla (`AllBlockEntityTypes`'tan doğrulandı) |
 
 `Metadata.WEOffset*` sıfırdır: şematiğin **minimum köşesi** paste konumuna gelir.
+`.nbt` tarafında da koordinatlar (0,0,0)'a normalize edilir.
+
+Sadece bir format istersen: `build.py --format schem` / `--format nbt`.
 
 ---
 
@@ -40,28 +48,56 @@ python3 -m venv .venv
 
 Dosyalar `out/` klasörüne yazılır.
 
-### Oyuna aktarma
+### Oyuna aktarma — 3 yol
 
-1. `out/*.schem` dosyalarını sunucu/dünya klasörünüzdeki
-   `config/worldedit/schematics/` altına kopyalayın.
-   *(Tek oyunculuda: `.minecraft/config/worldedit/schematics/`; sunucuda
-   `plugins/WorldEdit/schematics/` veya `config/worldedit/schematics/`.)*
-2. Oyunda, yapının **kuzeybatı-alt köşesinin** geleceği yere geçin ve yüzünüzü
-   güneye (+Z) dönün — şematikler bu yönde tasarlandı:
+#### A) Structure Block (mod gerekmez, bedava, anında) — **en kolayı**
+
+`.nbt` dosyasını dünyanızın klasörüne koyun:
+
+```
+.minecraft/saves/<DÜNYA ADI>/generated/minecraft/structures/01_power.nbt
+```
+
+*(`generated/minecraft/structures` klasörleri yoksa elle oluşturun.)*
+
+Oyunda (creative + cheats açık):
+
+```
+/give @s structure_block
+```
+
+Structure block'u yerleştirin → sağ tık → mod'u **LOAD** yapın → isim kutusuna
+`01_power` yazın → **LOAD** → sonra **PLACE**.
+
+Yapı, structure block'un **1 blok yukarısından** başlayarak +X/+Z yönünde
+basılır (offset'i blok arayüzünden ayarlayabilirsiniz). Vanilla structure
+block sınırı 48×48×48'dir; modüller bu sınırın altında tutuluyor.
+
+#### B) WorldEdit (`.schem`)
+
+1. `out/*.schem` → `config/worldedit/schematics/`
+   *(sunucuda `plugins/WorldEdit/schematics/` olabilir)*
+2. Yapının **kuzeybatı-alt köşesinin** geleceği yerde durun:
 
    ```
    //schem load 01_power
    //paste -a
    ```
 
-   `-a` havayı atlar, yani mevcut arazi silinmez. Yapıyı tam olarak
-   kopyalandığı gibi (hava dahil) basmak isterseniz `-a` olmadan kullanın;
-   temiz düz zemine basıyorsanız `//paste -a` yeterlidir.
-3. Paste sonrası kontrol listesi için ilgili modül dokümanına bakın.
+   `-a` havayı atlar (arazi silinmez). Düz zeminde `-a` ile basın; engebeli
+   yerde `-a` olmadan basmak motor boşluğu gibi boş kalması gereken yerleri
+   de temizler.
 
-> **Not:** `//paste` yapının min köşesini ayaklarınızın altındaki bloğa değil,
-> **durduğunuz konuma** yerleştirir. Emin olmak için önce `//paste -a -s`
-> (seçim olarak göster) deneyebilirsiniz.
+#### C) Create Schematicannon (`.nbt`, ek mod gerekmez)
+
+1. `out/*.nbt` → `.minecraft/schematics/` (oyun klasörünün kökü, `config/` değil)
+2. **Schematic Table**'a boş bir Schematic koyup listeden `01_power` seçin ve yazdırın
+3. Yazılı Schematic'i elinize alıp sağ tıkla konumlandırın
+4. **Schematicannon**'a Schematic'i + barut (yakıt) + malzemeleri verin
+
+> Bu yol yapıyı **gerçekten inşa eder**, yani tüm blokların malzemesi gerekir.
+> Creative'de test için topun yanına **Creative Crate** koyup malzeme
+> besleyebilirsiniz. Hızlı test için A veya B yolu çok daha pratik.
 
 ---
 

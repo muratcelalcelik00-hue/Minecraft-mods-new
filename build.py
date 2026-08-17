@@ -22,14 +22,19 @@ MODULES = {
 OUT_DIR = "out"
 
 
-def build_one(name: str, *, do_validate: bool = True) -> bool:
+def build_one(name: str, *, do_validate: bool = True, formats=("schem", "nbt")) -> bool:
     mod = MODULES[name]
     canvas = mod.build()
-    path = canvas.save(OUT_DIR, mod.MODULE_ID)
+    paths = []
+    if "schem" in formats:
+        paths.append(canvas.save(OUT_DIR, mod.MODULE_ID))  # Sponge v2 (WorldEdit)
+    if "nbt" in formats:
+        paths.append(canvas.save_nbt(OUT_DIR, mod.MODULE_ID))  # structure (Create)
 
     size = canvas.size
     print(f"\n=== {mod.TITLE}")
-    print(f"    dosya : {path}")
+    for p in paths:
+        print(f"    dosya : {p}")
     print(f"    boyut : {size[0]} x {size[1]} x {size[2]} (X x Y x Z), {len(canvas.blocks())} blok")
     print("    giriş/çıkış noktaları (şematik koordinatı, //paste sonrası min köşeye göre):")
     for p in canvas.normalized_io():
@@ -48,12 +53,19 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--module", choices=sorted(MODULES), action="append")
     ap.add_argument("--no-validate", action="store_true")
+    ap.add_argument(
+        "--format",
+        choices=["schem", "nbt", "both"],
+        default="both",
+        help="schem = WorldEdit (Sponge v2), nbt = Create Schematic Table (structure)",
+    )
     args = ap.parse_args()
 
+    formats = ("schem", "nbt") if args.format == "both" else (args.format,)
     names = args.module or sorted(MODULES)
     all_ok = True
     for n in names:
-        all_ok &= build_one(n, do_validate=not args.no_validate)
+        all_ok &= build_one(n, do_validate=not args.no_validate, formats=formats)
 
     print()
     if not all_ok:

@@ -173,6 +173,12 @@ class Canvas:
     def normalized_io(self) -> list[IOPoint]:
         return [IOPoint(p.name, self.to_schem(p.pos), p.kind, p.note) for p in self.manifest.io]
 
+    def save_nbt(self, out_dir: str, name: str) -> str:
+        """Vanilla structure .nbt yazar (Create'in Schematic Table'ı bunu okur)."""
+        from . import structure
+
+        return structure.write(self._blocks, out_dir, name)
+
     def save(self, out_dir: str, name: str) -> str:
         """Sponge Schematic v2 (.schem) yazar. Min köşe (0,0,0)'a kaydırılır."""
         os.makedirs(out_dir, exist_ok=True)

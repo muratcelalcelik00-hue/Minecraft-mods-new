@@ -280,6 +280,24 @@ def _bootstrap_drive(c: Canvas) -> None:
         c.set((SPINE_X, POOL_Y + 1, z), B.shaft("z"))
 
 
+def _clearances(c: Canvas) -> None:
+    """İşlevsel olarak BOŞ kalması gereken yerlere açıkça hava yazar.
+
+    `//paste -a` zaten havayı atlar, ama düz olmayan araziye basarken ya da
+    Create'in Schematicannon'u ile basarken bu bloklar dolu kalırsa yapı
+    çalışmaz: motorun gövdesi taşacak yer ve suyun akıp düşeceği kolon.
+    """
+    for y in range(TANK_Y0, TANK_Y0 + TANK_H):
+        for z in range(TANK_Z0, TANK_Z0 + TANK_W):
+            c.set((ENGINE_X + 1, y, z), B.AIR)
+
+    for i in range(WHEEL_COUNT):
+        x = WHEEL_X0 + i
+        c.set((x, WHEEL_Y + 1, WHEEL_Z), B.AIR)  # çarkın üstünden akan su
+        for y in range(1, WHEEL_Y + 2):
+            c.set((x, y, WHEEL_Z - 1), B.AIR)  # düşen su kolonu
+
+
 def _stress_budget() -> tuple[S.Budget, S.Budget]:
     boot = S.Budget("Bootstrap ağı (su çarkları @ 8 RPM)")
     boot.add_source("Su çarkı", "create:water_wheel", WHEEL_COUNT)
@@ -307,6 +325,7 @@ def build() -> Canvas:
     _fuel_lanes(c)
     _water_supply(c)
     _bootstrap_drive(c)
+    _clearances(c)
 
     boot, main = _stress_budget()
     c.manifest.stress = {
