@@ -343,3 +343,29 @@ def mechanical_mixer() -> str:
     - minimum hız: SpeedLevel.MEDIUM
     """
     return "create:mechanical_mixer"
+
+
+# --------------------------------------------------------------------------
+# Modül 4: filtreli lojistik
+# --------------------------------------------------------------------------
+
+
+def smart_chute(filter_item: str, powered: bool = False) -> str:
+    """SmartChuteBlock -> yalnız `powered` property'si (yön yok, hep aşağı).
+
+    `powered=true` chute'u DURDURUR (getStateForPlacement redstone sinyalinden
+    okur), o yüzden şematikte false yazılır.
+
+    Normal chute gibi üstteki envanterden çeker / alttakine iter, ama
+    FilteringBehaviour taşır: `canAcceptItem` içinde `filtering.test(stack)`
+    çağrılır. Yani ortak bir depodan yalnız filtreye uyan itemi çeker.
+
+    Filtre NBT (FilteringBehaviour.write):
+        nbt.put("Filter", stack.saveOptional(registries))
+    1.21 ItemStack formatı: {id:"...", count:N}
+    """
+    return block(
+        "create:smart_chute",
+        powered=powered,
+        nbt=f'{{Filter:{{id:"{filter_item}",count:1}}}}',
+    )

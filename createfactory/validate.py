@@ -376,26 +376,51 @@ def check_engines(w: World, rep: Report) -> int:
 
 
 def check_deployers(w: World, rep: Report) -> None:
+    """Deployer'ın önünde geçerli bir hedef, arkasında da besleme var mı?
+
+    Geçerli hedefler:
+      - blaze burner  (yakıtlama; modül 1/2/3)
+      - bant / depot  (sequenced assembly, deploying; modül 4)
+    Besleme: chute / smart chute (üstten) ya da bitişik funnel.
+    """
+    TARGETS = {"create:blaze_burner", "create:belt", "create:depot"}
+    FEEDERS = {"create:chute", "create:smart_chute", "create:andesite_funnel",
+               "create:brass_funnel", "create:andesite_belt_funnel", "create:brass_belt_funnel"}
     bad = 0
     deployers = [p for p in w.parsed if w.id_at(p) == "create:deployer"]
     for p in deployers:
         facing = w.props_at(p)["facing"]
         off = DIRS[facing]
         target = (p[0] + off[0], p[1] + off[1], p[2] + off[2])
-        if w.id_at(target) != "create:blaze_burner":
-            rep.error(f"deployer {p} -> {target} blaze burner değil ({w.id_at(target)})")
+        if w.id_at(target) not in TARGETS:
+            rep.error(
+                f"deployer {p} -> {target} geçerli hedef değil ({w.id_at(target)}); "
+                "blaze burner / bant / depot olmalı"
+            )
             bad += 1
-        above = (p[0], p[1] + 1, p[2])
-        if w.id_at(above) != "create:chute":
-            rep.error(f"deployer {p}: üstünde chute yok, yakıt gelmez")
+        neighbours = [(p[0] + o[0], p[1] + o[1], p[2] + o[2]) for o in DIRS.values()]
+        if not any(w.id_at(n) in FEEDERS for n in neighbours):
+            rep.error(f"deployer {p}: besleyen chute/funnel yok")
             bad += 1
     if not bad and deployers:
-        rep.ok(f"{len(deployers)} deployer blaze burner'a bakıyor ve chute ile besleniyor")
+        rep.ok(f"{len(deployers)} deployer: hedef ve besleme zinciri doğru")
 
-    for p in [q for q in w.parsed if w.id_at(q) == "create:chute"]:
+    for p in [q for q in w.parsed if w.id_at(q) in ("create:chute", "create:smart_chute")]:
         above = (p[0], p[1] + 1, p[2])
-        if w.id_at(above) != "create:item_vault":
-            rep.error(f"chute {p}: üstünde item_vault yok, çekecek envanter yok")
+        below = (p[0], p[1] - 1, p[2])
+        if w.id_at(above) not in ("create:item_vault", "minecraft:barrel", "create:chute",
+                                  "create:smart_chute", "minecraft:chest"):
+            rep.error(f"chute {p}: üstünde çekilecek envanter yok ({w.id_at(above)})")
+        if w.is_air(below):
+            # crushing wheel çiftinin arasındaki boşluk geçerli hedeftir:
+            # controller orada çalışma anında oluşur
+            flanked = any(
+                w.id_at((below[0] + o[0], below[1] + o[1], below[2] + o[2])) == "create:crushing_wheel"
+                and w.id_at((below[0] - o[0], below[1] - o[1], below[2] - o[2])) == "create:crushing_wheel"
+                for o in ((1, 0, 0), (0, 0, 1))
+            )
+            if not flanked:
+                rep.error(f"chute {p}: altında hedef yok")
 
 
 def check_fluid(w: World, rep: Report, expected_networks: int) -> None:

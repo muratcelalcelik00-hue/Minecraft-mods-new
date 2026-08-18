@@ -414,3 +414,47 @@ public SpeedLevel getMinimumRequiredSpeedLevel() { return SpeedLevel.MEDIUM; }
 yönüne dik yatay eksende `true` döner. Yani bir şaft hattı bir bandın kasnak
 segmentinin içinden geçebilir; bant iki yanındaki şaftları 1:1 bağlar.
 Doğrulayıcı bunu ve bant zincirinin kendi içinde tek parça döndüğünü modelliyor.
+
+---
+
+## 11. Modül 4 (mekanizma) doğrulamaları
+
+### Precision mechanism — sequenced assembly
+
+`sequenced_assembly/precision_mechanism.json`:
+
+```
+ingredient: {"tag": "c:plates/gold"}    loops: 5
+adım 1: create:deploying  [incomplete_precision_mechanism, create:cogwheel]
+adım 2: create:deploying  [incomplete_precision_mechanism, create:large_cogwheel]
+adım 3: create:deploying  [incomplete_precision_mechanism, #c:nuggets/iron]
+```
+
+→ 5 × 3 = **15 deploy** işlemi.
+
+### Filtre NBT — `FilteringBehaviour.write`
+
+```java
+nbt.put("Filter", getFilter().saveOptional(registries));
+nbt.putInt("FilterAmount", count);
+```
+
+1.21 ItemStack formatı `{id:"...", count:N}` olduğu için şematikte:
+`{Filter:{id:"create:cogwheel",count:1}}`
+
+### Smart chute
+
+`SmartChuteBlock extends AbstractChuteBlock` — tek blockstate property'si
+**`powered`** (yön yok, her zaman aşağı). `getStateForPlacement` redstone
+sinyalinden okur; sinyal yoksa `false` = **çalışır**.
+
+`SmartChuteBlockEntity`:
+
+```java
+public boolean canAcceptItem(ItemStack stack) {
+    return super.canAcceptItem(stack) && canActivate() && filtering.test(stack);
+}
+```
+
+→ Ortak bir depodan yalnız filtreye uyan parçayı çeker. Modül 4'te 15 istasyonu
+tek vault sırasından beslemek bu sayede mümkün.

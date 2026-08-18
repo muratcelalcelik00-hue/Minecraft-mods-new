@@ -4,7 +4,7 @@ Create 6.x için modüler, büyük ölçekli bir fabrika kompleksinin WorldEdit
 şematiklerini üreten Python projesi. Her modül ayrı bir `.schem` dosyasıdır ve
 tek başına paste edilip test edilebilir.
 
-**Durum:** Modül 1 (Güç), 2 (Cevher işleme) ve 3 (Alaşım) hazır. Modül 4-7 sırada.
+**Durum:** Modül 1-4 hazır (Güç, Cevher işleme, Alaşım, Mekanizma). Modül 5-7 sırada.
 
 ---
 
@@ -138,7 +138,7 @@ malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 | 1 | Güç (boiler + engine bankası + ana şaft hattı) | `out/01_power.schem` | ✅ hazır — [doküman](docs/modul-01-guc.md) |
 | 2 | Cevher işleme (crushing → washing → bulk smelting) | `out/02_ore.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-02-cevher.md) |
 | 3 | Alaşım (andesite alloy, brass) | `out/03_alloy.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-03-alasim.md) |
-| 4 | Mekanizma (kinetic → precision mechanism) | | beklemede |
+| 4 | Mekanizma (precision mechanism) | `out/04_mechanism.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-04-mekanizma.md) |
 | 5 | Depolama + sıralama (vault dizisi, brass tunnel) | | beklemede |
 | 6 | Tarım (ağaç, kaktüs/bambu, buğday) | | beklemede |
 | 7 | Yardımcı (sıvı sistemleri, sequenced assembly) | | beklemede |
@@ -157,11 +157,13 @@ createfactory/
     power.py       # Modül 1
     ore.py         # Modül 2
     alloy.py       # Modül 3
+    mechanism.py   # Modül 4
 build.py           # CLI
 docs/
   modul-01-guc.md          # modül dokümanları
   modul-02-cevher.md
   modul-03-alasim.md
+  modul-04-mekanizma.md
   create-6-dogrulama.md    # her sayının kaynak koddaki karşılığı
 ```
 
