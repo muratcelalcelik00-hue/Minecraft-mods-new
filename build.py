@@ -13,11 +13,12 @@ import argparse
 import sys
 
 from createfactory import validate
-from createfactory.modules import ore, power
+from createfactory.modules import alloy, ore, power
 
 MODULES = {
     "power": power,
     "ore": ore,
+    "alloy": alloy,
 }
 
 OUT_DIR = "out"

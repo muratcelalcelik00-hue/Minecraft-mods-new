@@ -352,3 +352,65 @@ yakıtı yine bir deployer ile beslenir.
 `create:fan_transparent` tag'i (doğrulandı): blaze_burner, lit_blaze_burner,
 sail_frame, andesite/brass/copper_bars, **minecraft:iron_bars**, copper_grate'ler,
 mangrove_roots, `#minecraft:campfires`, `#minecraft:fences`, `#minecraft:leaves`.
+
+---
+
+## 10. Modül 3 (alaşım) doğrulamaları
+
+### Tarifler
+
+```
+mixing/andesite_alloy.json : andesite + #c:nuggets/iron -> create:andesite_alloy
+mixing/brass_ingot.json    : #c:ingots/copper + #c:ingots/zinc
+                             "heat_requirement": "heated"  -> 2 x create:brass_ingot
+```
+
+### Isı eşiği — `HeatCondition.testBlazeBurner`
+
+```java
+if (this == SUPERHEATED) return level == HeatLevel.SEETHING;
+if (this == HEATED)      return level != HeatLevel.NONE && level != HeatLevel.SMOULDERING;
+return true;
+```
+
+`BasinBlockEntity.getHeatLevelOf(state)` basin'in **below(1)** bloğuna bakar:
+blaze burner ise kendi HEAT_LEVEL'i, `passive_boiler_heaters` tag'indeki bir
+blok (kamp ateşi, lav, magma) ise **SMOULDERING**.
+
+→ **Kamp ateşi/lav "heated" tarifleri çalıştırmaz.** Pirinç için yakıtlı
+blaze burner (kindled) şart.
+
+### Basin
+
+```java
+// BasinOperatingBlockEntity
+BlockEntity basinBE = level.getBlockEntity(worldPosition.below(2));   // mixer 2 üstte
+
+// BasinBlockEntity.addBehaviours
+behaviours.add(new DirectBeltInputBehaviour(this));   // bandın ucu doğrudan besler
+
+// BasinBlock.canOutputTo
+BlockPos neighbour = basinPos.relative(direction);
+BlockPos output    = neighbour.below();
+// neighbour BOŞ olmalı, output DirectBeltInputBehaviour taşımalı
+
+// BasinBlockEntity.updateSpoutput -> FACING'i Create kendi ayarlar
+```
+
+### Mechanical mixer
+
+```java
+public class MechanicalMixerBlock extends KineticBlock implements IBE<...>, ICogWheel
+public Axis getRotationAxis(BlockState state) { return Axis.Y; }
+public boolean hasShaftTowards(...) { return false; }
+public SpeedLevel getMinimumRequiredSpeedLevel() { return SpeedLevel.MEDIUM; }
+```
+
+→ Mixer'a **şaft takılamaz**; yalnız yanındaki Y eksenli küçük dişliyle kavrar.
+
+### Bant, şaft hattını kesmez
+
+`BeltBlock.hasShaftTowards` start/end/pulley segmentleri için, bandın gidiş
+yönüne dik yatay eksende `true` döner. Yani bir şaft hattı bir bandın kasnak
+segmentinin içinden geçebilir; bant iki yanındaki şaftları 1:1 bağlar.
+Doğrulayıcı bunu ve bant zincirinin kendi içinde tek parça döndüğünü modelliyor.

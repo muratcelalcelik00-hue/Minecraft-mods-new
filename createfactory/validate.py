@@ -36,7 +36,7 @@ OPPOSITE = {
 }
 DIR_AXIS = {"east": "x", "west": "x", "up": "y", "down": "y", "south": "z", "north": "z"}
 
-SMALL_COGS = {"create:cogwheel", "create:mechanical_pump"}
+SMALL_COGS = {"create:cogwheel", "create:mechanical_pump", "create:mechanical_mixer"}
 LARGE_COGS = {"create:large_cogwheel"}
 #: axis property'si dönme eksenini doğrudan veren bloklar
 AXIS_BLOCKS = {
@@ -117,6 +117,11 @@ def rotation_axis(bid: str, props: dict[str, str]) -> str | None:
         return props.get("axis")
     if bid == "create:gearbox":
         return None  # özel: kendi ekseni HARİÇ tüm yönlere şaft verir
+    if bid == "create:mechanical_mixer":
+        return "y"  # MechanicalMixerBlock.getRotationAxis -> sabit Y
+    if bid == "create:belt":
+        # bandın kasnak ekseni, bandın gidiş yönüne DİK yatay eksendir
+        return "z" if DIR_AXIS[props["facing"]] == "x" else "x"
     if bid in ("create:water_wheel", "create:mechanical_pump", "create:encased_fan"):
         return DIR_AXIS[props["facing"]]
     if bid == "create:deployer":
@@ -142,6 +147,8 @@ def is_kinetic(bid: str) -> bool:
         "create:rotation_speed_controller",
         "create:steam_engine",
         "create:encased_fan",
+        "create:mechanical_mixer",
+        "create:belt",
     }
 
 
@@ -149,6 +156,14 @@ def has_shaft_towards(w: World, pos: Pos, direction: str) -> bool:
     bid, props = w.parsed[pos]
     if bid == "create:steam_engine":
         return False  # motor şaftı 2 blok ileride, doğrudan bağlanmaz
+    if bid == "create:mechanical_mixer":
+        return False  # hasShaftTowards her yön için false
+    if bid == "create:belt":
+        # yalnız kasnaklı segmentlere (start/end/pulley) şaft takılır;
+        # iki ucuna şaft takılan bir bant, şaftları 1:1 birbirine bağlar
+        if props.get("part") not in ("start", "end", "pulley"):
+            return False
+        return DIR_AXIS[direction] == rotation_axis(bid, props)
     if bid == "create:gearbox":
         return DIR_AXIS[direction] != props["axis"]
     axis = rotation_axis(bid, props)
@@ -185,6 +200,17 @@ def kinetic_edges(w: World, ratios: dict | None = None, signs: dict | None = Non
             b = (a[0] + off[0], a[1] + off[1], a[2] + off[2])
             if b in w.parsed and is_kinetic(w.id_at(b)):
                 if has_shaft_towards(w, a, d) and has_shaft_towards(w, b, OPPOSITE[d]):
+                    link(a, b)
+
+        # 1b) bant zinciri: bir bandın tüm segmentleri tek parça döner.
+        #     (Kinetik bağlantı kasnaktan gelir, ama zincirin tamamı aynı
+        #      hızda ve yönde hareket eder.)
+        if bid_a == "create:belt":
+            fa = props_a["facing"]
+            for d in (fa, OPPOSITE[fa]):
+                off = DIRS[d]
+                b = (a[0] + off[0], a[1] + off[1], a[2] + off[2])
+                if w.id_at(b) == "create:belt" and w.props_at(b).get("facing") == fa:
                     link(a, b)
 
         # 2) küçük dişli <-> küçük dişli (manhattan 1, aynı eksen, yön != eksen)

@@ -300,3 +300,46 @@ def encased_fan(facing: str) -> str:
 
 LAVA = "minecraft:lava[level=0]"
 REDSTONE_BLOCK = "minecraft:redstone_block"
+
+
+# --------------------------------------------------------------------------
+# Modül 3: alaşım
+# --------------------------------------------------------------------------
+
+
+def basin(facing: str = "down") -> str:
+    """BasinBlock -> FACING (FACING_HOPPER: down + 4 yatay).
+
+    FACING = ÇIKIŞ yönüdür ve Create bunu KENDİ bulur
+    (BasinBlockEntity.updateSpoutput yatay yönleri tarar), o yüzden
+    şematikte varsayılan `down` bırakmak yeterli.
+
+    Çıkış şartı (BasinBlock.canOutputTo):
+      - basin.relative(yön) BOŞ olmalı (çarpışma kutusu yok)
+      - basin.relative(yön).below() DirectBeltInputBehaviour taşımalı
+        (bant, depot, ...)
+
+    Girdi: basin'in kendisi DirectBeltInputBehaviour taşır, yani bir bandın
+    UCU doğrudan basin'e item verebilir — funnel gerekmez.
+
+    Isı (BasinBlockEntity.getHeatLevelOf, below(1)):
+      - blaze burner  -> kendi HEAT_LEVEL'i
+      - kamp ateşi / lav / magma (passive_boiler_heaters) -> SMOULDERING
+      HeatCondition.HEATED, SMOULDERING'i KABUL ETMEZ:
+        `level != NONE && level != SMOULDERING`
+      Yani "heated" tarifler (pirinç) için yakıtlı blaze burner ŞART.
+    """
+    return block("create:basin", facing=facing)
+
+
+def mechanical_mixer() -> str:
+    """MechanicalMixerBlock: KineticBlock + ICogWheel.
+
+    - dönme ekseni sabit **Y**
+    - `hasShaftTowards` her yön için FALSE -> şaft takılamaz, yalnızca yandaki
+      küçük dişliyle KAVRAYARAK sürülür
+    - basin tam **2 blok altında** olmalı (BasinOperatingBlockEntity:
+      `worldPosition.below(2)`), aradaki blok boş bırakılır
+    - minimum hız: SpeedLevel.MEDIUM
+    """
+    return "create:mechanical_mixer"
