@@ -562,6 +562,42 @@ def check_crushing_wheels(w: World, rep: Report, comps, graph, signs) -> None:
 
 
 MAX_ROTATION_SPEED = 256  # CKinetics.maxRotationSpeed varsayılanı
+MAX_BELT_LENGTH = 20  # CKinetics.maxBeltLength varsayılanı
+
+
+def check_belts(w: World, rep: Report) -> None:
+    """Bant zincirleri: uzunluk sınırı ve en az 2 segment.
+
+    BeltBlock.initBelt zinciri 2'den kısaysa bandı KIRAR. Uzunluk sınırı
+    (varsayılan 20) elle inşa edilebilirlik için kontrol edilir.
+    """
+    belts = {p for p in w.parsed if w.id_at(p) == "create:belt"}
+    seen: set[Pos] = set()
+    for p in sorted(belts):
+        if p in seen:
+            continue
+        facing = w.props_at(p)["facing"]
+        off = DIRS[facing]
+        chain = [p]
+        cur = p
+        while True:
+            nxt = (cur[0] + off[0], cur[1] + off[1], cur[2] + off[2])
+            if nxt in belts and w.props_at(nxt).get("facing") == facing:
+                chain.append(nxt)
+                cur = nxt
+            else:
+                break
+        # yalnız zincirin başından say
+        prev = (p[0] - off[0], p[1] - off[1], p[2] - off[2])
+        if prev in belts and w.props_at(prev).get("facing") == facing:
+            continue
+        seen.update(chain)
+        if len(chain) < 2:
+            rep.error(f"bant {p}: zincir {len(chain)} blok — initBelt 2'den kısa bandı kırar")
+        elif len(chain) > MAX_BELT_LENGTH:
+            rep.error(f"bant {p}: zincir {len(chain)} blok > {MAX_BELT_LENGTH} (maxBeltLength)")
+        else:
+            rep.ok(f"bant zinciri {p} -> {chain[-1]}: {len(chain)} blok")
 
 
 def check_speeds(w: World, rep: Report, comps, ratios, external_power: bool = False) -> None:
@@ -656,6 +692,7 @@ def run(blocks: dict[Pos, str], *, expected_fluid_networks: int | None = None,
     if any(w.id_at(p) == "create:steam_engine" for p in w.parsed):
         check_engines(w, rep)
     check_deployers(w, rep)
+    check_belts(w, rep)
     if expected_fluid_networks is not None:
         check_fluid(w, rep, expected_fluid_networks)
     ratios: dict = {}

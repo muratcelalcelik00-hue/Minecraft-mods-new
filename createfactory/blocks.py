@@ -369,3 +369,20 @@ def smart_chute(filter_item: str, powered: bool = False) -> str:
         powered=powered,
         nbt=f'{{Filter:{{id:"{filter_item}",count:1}}}}',
     )
+
+
+def brass_belt_funnel(facing: str, shape: str = "pulling", filter_item: str | None = None,
+                      powered: bool = False) -> str:
+    """Bir bandın üstüne konan pirinç funnel — filtre taşıyabilir.
+
+    shape: pulling (bant -> envanter) | pushing (envanter -> bant)
+    FACING bağlı olduğu envanterden DIŞARI bakar; bağlı envanter
+    pos.relative(facing.getOpposite()).
+
+    Filtre NBT'si FilteringBehaviour'dan: {Filter:{id:"...",count:1}}
+    Filtreli bir funnel bandın üstünden YALNIZ uyanı çeker, gerisi altından
+    geçer — sıralama hattının çalışma prensibi budur.
+    """
+    nbt = f'{{Filter:{{id:"{filter_item}",count:1}}}}' if filter_item else None
+    return block("create:brass_belt_funnel", facing=facing, shape=shape,
+                 powered=powered, nbt=nbt)
