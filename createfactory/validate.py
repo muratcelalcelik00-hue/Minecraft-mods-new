@@ -46,6 +46,7 @@ AXIS_BLOCKS = {
     "create:clutch",
     "create:gearshift",
     "create:powered_shaft",
+    "create:crushing_wheel",
 }
 
 
@@ -116,7 +117,7 @@ def rotation_axis(bid: str, props: dict[str, str]) -> str | None:
         return props.get("axis")
     if bid == "create:gearbox":
         return None  # özel: kendi ekseni HARİÇ tüm yönlere şaft verir
-    if bid in ("create:water_wheel", "create:mechanical_pump"):
+    if bid in ("create:water_wheel", "create:mechanical_pump", "create:encased_fan"):
         return DIR_AXIS[props["facing"]]
     if bid == "create:deployer":
         facing_axis = DIR_AXIS[props["facing"]]
@@ -140,6 +141,7 @@ def is_kinetic(bid: str) -> bool:
         "create:deployer",
         "create:rotation_speed_controller",
         "create:steam_engine",
+        "create:encased_fan",
     }
 
 
@@ -153,7 +155,7 @@ def has_shaft_towards(w: World, pos: Pos, direction: str) -> bool:
     return axis is not None and DIR_AXIS[direction] == axis
 
 
-def kinetic_edges(w: World, ratios: dict | None = None) -> dict[Pos, set[Pos]]:
+def kinetic_edges(w: World, ratios: dict | None = None, signs: dict | None = None) -> dict[Pos, set[Pos]]:
     """Create'in bağlantı kurallarına göre kinetik komşuluk grafiği.
 
     `ratios` verilirse (a,b) -> hız çarpanı (mutlak değer) da doldurulur;
@@ -162,9 +164,12 @@ def kinetic_edges(w: World, ratios: dict | None = None) -> dict[Pos, set[Pos]]:
     g: dict[Pos, set[Pos]] = defaultdict(set)
     nodes = [p for p, (bid, _) in w.parsed.items() if is_kinetic(bid)]
 
-    def link(a: Pos, b: Pos, factor=1.0, inverse=None) -> None:
+    def link(a: Pos, b: Pos, factor=1.0, inverse=None, sign=1) -> None:
         g[a].add(b)
         g[b].add(a)
+        if signs is not None:
+            signs[(a, b)] = sign
+            signs[(b, a)] = sign
         if ratios is not None:
             ratios[(a, b)] = factor
             ratios[(b, a)] = inverse if inverse is not None else (
@@ -188,7 +193,7 @@ def kinetic_edges(w: World, ratios: dict | None = None) -> dict[Pos, set[Pos]]:
                 b = (a[0] + off[0], a[1] + off[1], a[2] + off[2])
                 if w.id_at(b) in SMALL_COGS:
                     if rotation_axis(*w.parsed[b]) == axis_a and DIR_AXIS[d] != axis_a:
-                        link(a, b, 1.0)
+                        link(a, b, 1.0, sign=-1)
 
         # 3) büyük dişli <-> küçük dişli (aynı eksen, ortak eksende 0, diğer
         #    iki eksende +-1 -> çapraz)
@@ -202,7 +207,7 @@ def kinetic_edges(w: World, ratios: dict | None = None) -> dict[Pos, set[Pos]]:
                     }[axis_a]
                     b = (a[0] + offs[0], a[1] + offs[1], a[2] + offs[2])
                     if w.id_at(b) in SMALL_COGS and rotation_axis(*w.parsed[b]) == axis_a:
-                        link(a, b, 2.0)  # büyük -> küçük: hız x2
+                        link(a, b, 2.0, sign=-1)  # büyük -> küçük: hız x2, yön ters
 
         # 4) RSC <-> tam üstündeki büyük dişli
         if bid_a == "create:rotation_speed_controller":
@@ -398,8 +403,8 @@ def check_fluid(w: World, rep: Report, expected_networks: int) -> None:
             rep.error("bir boru ağının açık ucu su kaynağına bakmıyor")
 
 
-def check_kinetics(w: World, rep: Report, ratios: dict) -> list[set[Pos]]:
-    g = kinetic_edges(w, ratios)
+def check_kinetics(w: World, rep: Report, ratios: dict, signs: dict | None = None) -> list[set[Pos]]:
+    g = kinetic_edges(w, ratios, signs)
     _NEIGHBOR_GRAPH.clear()
     _NEIGHBOR_GRAPH.update(g)
     nodes = [p for p, (bid, _) in w.parsed.items() if is_kinetic(bid)]
@@ -429,10 +434,86 @@ def check_kinetics(w: World, rep: Report, ratios: dict) -> list[set[Pos]]:
     return real
 
 
+def propagate_signs(w: World, comp: set[Pos], graph, signs: dict) -> dict[Pos, int]:
+    """Bileşen içinde GÖRECELİ dönüş yönlerini yayar.
+
+    Kurallar: eksen bağlantısı +1, dişli kavraması -1, beslenen gearshift'ten
+    ÇIKIŞ -1 (GearshiftBlock yönü çevirir).
+
+    Gearbox'lar +1 kabul edilir (gerçek işaretleri giriş yönüne bağlıdır).
+    Bu, MUTLAK yön için doğru değildir; ama iki çıkışın da aynı gearbox
+    zincirinden beslendiği durumlarda GÖRECELİ karşılaştırma doğru kalır —
+    crushing wheel çiftini denetlemek için gereken tam olarak budur.
+    """
+    start = next(iter(comp))
+    out = {start: 1}
+    q = deque([start])
+    while q:
+        cur = q.popleft()
+        bid, props = w.parsed[cur]
+        flip_on_exit = bid == "create:gearshift" and props.get("powered") == "true"
+        for nb in graph.get(cur, ()):
+            if nb not in comp or nb in out:
+                continue
+            sign = out[cur] * signs.get((cur, nb), 1)
+            if flip_on_exit:
+                sign = -sign
+            out[nb] = sign
+            q.append(nb)
+    return out
+
+
+def check_crushing_wheels(w: World, rep: Report, comps, graph, signs) -> None:
+    wheels = [p for p in w.parsed if w.id_at(p) == "create:crushing_wheel"]
+    if not wheels:
+        return
+    if len(wheels) % 2:
+        rep.error(f"{len(wheels)} crushing wheel — çift sayı olmalı (çiftler hâlinde çalışır)")
+
+    signmap = {}
+    for comp in comps:
+        signmap.update(propagate_signs(w, comp, graph, signs))
+
+    seen = set()
+    for p in wheels:
+        if p in seen:
+            continue
+        axis = w.props_at(p)["axis"]
+        partner = None
+        for d, off in DIRS.items():
+            if DIR_AXIS[d] == axis:
+                continue  # side ekseni çarkın ekseninden farklı olmalı
+            cand = (p[0] + off[0] * 2, p[1] + off[1] * 2, p[2] + off[2] * 2)
+            if w.id_at(cand) == "create:crushing_wheel" and w.props_at(cand)["axis"] == axis:
+                gap = (p[0] + off[0], p[1] + off[1], p[2] + off[2])
+                if not w.is_air(gap):
+                    rep.error(
+                        f"crushing wheel çifti {p}/{cand}: aradaki {gap} boş değil "
+                        f"({w.id_at(gap)}) — controller oluşamaz"
+                    )
+                partner = cand
+                break
+        if partner is None:
+            rep.error(f"crushing wheel {p}: 2 blok ötede aynı eksenli eş çark yok")
+            continue
+        seen.update({p, partner})
+
+        sa, sb = signmap.get(p), signmap.get(partner)
+        if sa is None or sb is None:
+            rep.error(f"crushing wheel çifti {p}/{partner}: en az biri güç almıyor")
+        elif sa == sb:
+            rep.error(
+                f"crushing wheel çifti {p}/{partner} AYNI yönde dönüyor — "
+                "Create bu çifti çalıştırmaz (ters yön şart)"
+            )
+        else:
+            rep.ok(f"crushing wheel çifti {p}/{partner} ters yönde dönüyor")
+
+
 MAX_ROTATION_SPEED = 256  # CKinetics.maxRotationSpeed varsayılanı
 
 
-def check_speeds(w: World, rep: Report, comps, ratios) -> None:
+def check_speeds(w: World, rep: Report, comps, ratios, external_power: bool = False) -> None:
     """Hızı kaynaklardan yayıp ÇAKIŞMA arar.
 
     Aynı ağda bir bloğa iki farklı hız ulaşırsa Create tüm ağı durdurur
@@ -456,7 +537,13 @@ def check_speeds(w: World, rep: Report, comps, ratios) -> None:
                 speeds[p] = rpm
                 q.append(p)
         if not q:
-            rep.error(f"kinetik ağda hiç güç kaynağı yok ({len(comp)} blok)")
+            if external_power:
+                rep.ok(
+                    f"kinetik ağ ({len(comp)} blok) dış güçle beslenir — "
+                    "modülün güç girişine bağlanacak"
+                )
+            else:
+                rep.error(f"kinetik ağda hiç güç kaynağı yok ({len(comp)} blok)")
             continue
 
         conflicts = []
@@ -509,14 +596,20 @@ def w_neighbors(pos: Pos, comp: set[Pos]) -> set[Pos]:
     return {n for n in _NEIGHBOR_GRAPH.get(pos, ()) if n in comp}
 
 
-def run(blocks: dict[Pos, str], *, expected_fluid_networks: int = 3) -> Report:
+def run(blocks: dict[Pos, str], *, expected_fluid_networks: int | None = None,
+        external_power: bool = False) -> Report:
     rep = Report()
     w = World(blocks)
-    check_boiler(w, rep)
-    check_engines(w, rep)
+    if any(w.id_at(p) == "create:fluid_tank" for p in w.parsed):
+        check_boiler(w, rep)
+    if any(w.id_at(p) == "create:steam_engine" for p in w.parsed):
+        check_engines(w, rep)
     check_deployers(w, rep)
-    check_fluid(w, rep, expected_fluid_networks)
+    if expected_fluid_networks is not None:
+        check_fluid(w, rep, expected_fluid_networks)
     ratios: dict = {}
-    comps = check_kinetics(w, rep, ratios)
-    check_speeds(w, rep, comps, ratios)
+    signs: dict = {}
+    comps = check_kinetics(w, rep, ratios, signs)
+    check_speeds(w, rep, comps, ratios, external_power)
+    check_crushing_wheels(w, rep, comps, _NEIGHBOR_GRAPH, signs)
     return rep

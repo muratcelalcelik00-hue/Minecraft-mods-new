@@ -13,10 +13,11 @@ import argparse
 import sys
 
 from createfactory import validate
-from createfactory.modules import power
+from createfactory.modules import ore, power
 
 MODULES = {
     "power": power,
+    "ore": ore,
 }
 
 OUT_DIR = "out"
@@ -42,7 +43,12 @@ def build_one(name: str, *, do_validate: bool = True, formats=("schem", "nbt")) 
 
     ok = True
     if do_validate:
-        report = validate.run(canvas.blocks())
+        expected = 3 if name == "power" else None
+        report = validate.run(
+            canvas.blocks(),
+            expected_fluid_networks=expected,
+            external_power=(name != "power"),
+        )
         print("    doğrulama:")
         print(report.render())
         ok = not report.failed

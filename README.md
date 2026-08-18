@@ -137,7 +137,7 @@ malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 | # | Modül | Dosya | Durum |
 |---|---|---|---|
 | 1 | Güç (boiler + engine bankası + ana şaft hattı) | `out/01_power.schem` | ✅ hazır — [doküman](docs/modul-01-guc.md) |
-| 2 | Cevher işleme (crushing → washing → bulk smelting) | | beklemede |
+| 2 | Cevher işleme (crushing → washing → bulk smelting) | `out/02_ore.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-02-cevher.md) |
 | 3 | Alaşım (andesite alloy, brass, zinc) | | beklemede |
 | 4 | Mekanizma (kinetic → precision mechanism) | | beklemede |
 | 5 | Depolama + sıralama (vault dizisi, brass tunnel) | | beklemede |
@@ -156,6 +156,7 @@ createfactory/
   validate.py      # Create'in bağlantı kurallarını yeniden uygulayan denetleyici
   modules/
     power.py       # Modül 1
+    ore.py         # Modül 2
 build.py           # CLI
 docs/
   modul-01-guc.md          # modül dokümanı
