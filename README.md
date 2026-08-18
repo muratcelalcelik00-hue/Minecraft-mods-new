@@ -4,8 +4,7 @@ Create 6.x için modüler, büyük ölçekli bir fabrika kompleksinin WorldEdit
 şematiklerini üreten Python projesi. Her modül ayrı bir `.schem` dosyasıdır ve
 tek başına paste edilip test edilebilir.
 
-**Durum:** Modül 1 (Güç) hazır. Diğer modüller, modül 1 oyunda onaylandıktan
-sonra eklenecek.
+**Durum:** Modül 1 (Güç) ve Modül 2 (Cevher işleme) hazır. Modül 3-7 sırada.
 
 ---
 
@@ -159,7 +158,8 @@ createfactory/
     ore.py         # Modül 2
 build.py           # CLI
 docs/
-  modul-01-guc.md          # modül dokümanı
+  modul-01-guc.md          # modül dokümanları
+  modul-02-cevher.md
   create-6-dogrulama.md    # her sayının kaynak koddaki karşılığı
 ```
 
@@ -177,7 +177,10 @@ gerçek kuralları yeniden uygulanır:
   durdurur — bu hatayı oyunda bulmak çok zordur),
 * boru ağlarının yanlışlıkla birleşip birleşmediği (bitişik borular birleşir,
   debi düşer),
-* deployer → blaze burner ve vault → chute → deployer zincirleri.
+* deployer → blaze burner ve vault → chute → deployer zincirleri,
+* **crushing wheel çiftinin ters yönde döndüğü** (Create aynı yönde dönen
+  çifti çalıştırmaz; dişli ızgarası iki taraflı olduğu için bu hata kolayca
+  yapılır).
 
 ---
 
