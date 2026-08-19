@@ -4,7 +4,7 @@ Create 6.x için modüler, büyük ölçekli bir fabrika kompleksinin WorldEdit
 şematiklerini üreten Python projesi. Her modül ayrı bir `.schem` dosyasıdır ve
 tek başına paste edilip test edilebilir.
 
-**Durum:** Modül 1-6 hazır. Modül 7 sırada.
+**Durum:** 7 modülün tamamı hazır ve doğrulanıyor.
 
 ---
 
@@ -141,7 +141,7 @@ malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 | 4 | Mekanizma (precision mechanism) | `out/04_mechanism.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-04-mekanizma.md) |
 | 5 | Depolama + sıralama (vault dizisi, filtreli funnel) | `out/05_storage.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-05-depolama.md) |
 | 6 | Tarım (ağaç, bambu, şeker kamışı) | `out/06_farm.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-06-tarim.md) |
-| 7 | Yardımcı (sıvı sistemleri, sequenced assembly) | | beklemede |
+| 7 | Yardımcı üretim (pres: golden/iron sheet) | `out/07_press.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-07-pres.md) |
 
 ---
 
@@ -160,6 +160,7 @@ createfactory/
     mechanism.py   # Modül 4
     storage.py     # Modül 5
     farm.py        # Modül 6
+    press.py       # Modül 7
 build.py           # CLI
 docs/
   modul-01-guc.md          # modül dokümanları
@@ -168,6 +169,7 @@ docs/
   modul-04-mekanizma.md
   modul-05-depolama.md
   modul-06-tarim.md
+  modul-07-pres.md
   create-6-dogrulama.md    # her sayının kaynak koddaki karşılığı
 ```
 
@@ -191,6 +193,36 @@ gerçek kuralları yeniden uygulanır:
   yapılır),
 * bant zincirleri: en az 2 segment (kısası `initBelt` tarafından kırılır) ve
   `maxBeltLength = 20` sınırı.
+
+---
+
+## Modüller nasıl birbirine bağlanır
+
+Modül 1 **P** noktasına basıldığında diğerleri şu ofsetlere basılır:
+
+| Modül | Paste ofseti (P'ye göre) | Modül 1'in dalı |
+|---|---|---|
+| 2 — Cevher | `+ (32, 3, 16)` | 1 (`z=18`) |
+| 3 — Alaşım | `+ (32, 4, 16)` | 2 (`z=20`) |
+| 4 — Mekanizma | `+ (32, 4, 20)` | 3 (`z=22`) |
+| 5 — Depolama | `+ (31, 5, 23)` | 4 (`z=24`) |
+| 6 — Tarım | `+ (21, 8, 26)` | 5 (`z=26`) |
+| 7 — Pres | `+ (32, 5, 26)` | 6 (`z=28`) |
+
+Madde akışı:
+
+```
+modül 6 (tarım) ──kütük/bambu──> yakıt
+modül 2 (cevher) ──nugget/külçe──┬──> modül 3 (alaşım) ──> andesite alloy, brass
+                                 └──> modül 7 (pres) ──> golden sheet
+                                                          │
+modül 3 + modül 7 ────────────────────────────────────────┴──> modül 4 (mekanizma)
+                                                                    │
+tüm çıkışlar ──────────────────────────────────────────────> modül 5 (sıralama)
+```
+
+**Stres bütçesi:** modül 1 294.912 SU üretir; 2-7 toplam ~8.200 SU çeker
+(bütçenin %3'ü). Yani hatları çoğaltmak için çok yer var.
 
 ---
 

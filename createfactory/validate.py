@@ -125,6 +125,8 @@ def rotation_axis(bid: str, props: dict[str, str]) -> str | None:
     if bid == "create:mechanical_saw":
         # yatay testere: dönme ekseni = facing ekseni
         return DIR_AXIS[props["facing"]]
+    if bid == "create:mechanical_press":
+        return DIR_AXIS[props["facing"]]
     if bid in ("create:water_wheel", "create:mechanical_pump", "create:encased_fan"):
         return DIR_AXIS[props["facing"]]
     if bid == "create:deployer":
@@ -153,6 +155,7 @@ def is_kinetic(bid: str) -> bool:
         "create:mechanical_mixer",
         "create:belt",
         "create:mechanical_saw",
+        "create:mechanical_press",
     }
 
 

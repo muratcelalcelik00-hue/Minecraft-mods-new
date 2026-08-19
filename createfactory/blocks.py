@@ -415,3 +415,17 @@ SAND = "minecraft:sand"
 OAK_SAPLING = "minecraft:oak_sapling[stage=0]"
 BAMBOO = "minecraft:bamboo[age=0,leaves=none,stage=0]"
 SUGAR_CANE = "minecraft:sugar_cane[age=0]"
+
+
+def mechanical_press(facing: str) -> str:
+    """MechanicalPressBlock extends HorizontalKineticBlock -> facing (yatay).
+
+    getRotationAxis  = facing ekseni
+    hasShaftTowards  = face.getAxis() == facing ekseni  -> HER İKİ yandan mil
+                       alır, yani aynı eksende dizilen presler tek hat olur.
+
+    Geometri (Create'in `mechanical_press/pressing` ponder sahnesi):
+        bant [.,1,.] · boşluk [.,2,.] · pres [.,3,.]
+    yani pres bandın **2 blok üstünde**, aradaki blok boş.
+    """
+    return block("create:mechanical_press", facing=facing)
