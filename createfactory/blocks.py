@@ -386,3 +386,32 @@ def brass_belt_funnel(facing: str, shape: str = "pulling", filter_item: str | No
     nbt = f'{{Filter:{{id:"{filter_item}",count:1}}}}' if filter_item else None
     return block("create:brass_belt_funnel", facing=facing, shape=shape,
                  powered=powered, nbt=nbt)
+
+
+# --------------------------------------------------------------------------
+# Modül 6: tarım
+# --------------------------------------------------------------------------
+
+
+def mechanical_saw(facing: str, axis_along_first: bool = True, flipped: bool = False) -> str:
+    """SawBlock extends DirectionalAxisKineticBlock -> facing + axis_along_first + flipped.
+
+    YATAY testere (facing yatay) — ağaç/bitki keser:
+        getRotationAxis   = FACING ekseni
+        hasShaftTowards   = YALNIZ facing.getOpposite()  -> mil ARKADAN gelir
+    Create'in kendi ponder sahnesi (mechanical_saw/breaker.nbt) bunu doğruluyor:
+        saw [3,1,2] facing=west, kesilen gövde [2,1,2], mil [4,1,2] axis=x
+
+    Kesilen bloklar ItemEntity olarak düşer ve testereden UZAĞA doğru itilir
+    (SawBlockEntity.dropItemFromCutTree: hız = breakingPos - sawPos), o yüzden
+    toplama bandı testerenin karşı tarafına konur.
+    """
+    return block("create:mechanical_saw", facing=facing,
+                 axis_along_first=axis_along_first, flipped=flipped)
+
+
+DIRT = "minecraft:dirt"
+SAND = "minecraft:sand"
+OAK_SAPLING = "minecraft:oak_sapling[stage=0]"
+BAMBOO = "minecraft:bamboo[age=0,leaves=none,stage=0]"
+SUGAR_CANE = "minecraft:sugar_cane[age=0]"

@@ -458,3 +458,47 @@ public boolean canAcceptItem(ItemStack stack) {
 
 → Ortak bir depodan yalnız filtreye uyan parçayı çeker. Modül 4'te 15 istasyonu
 tek vault sırasından beslemek bu sayede mümkün.
+
+---
+
+## 12. Modül 6 (tarım) doğrulamaları
+
+### Mechanical saw — ağaç/bitki kesme
+
+`SawBlock extends DirectionalAxisKineticBlock` → `facing`, `axis_along_first`,
+`flipped`.
+
+```java
+public Axis getRotationAxis(BlockState state) {
+    return isHorizontal(state) ? state.getValue(FACING).getAxis() : super.getRotationAxis(state);
+}
+public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+    return isHorizontal(state) ? face == state.getValue(FACING).getOpposite()
+                               : super.hasShaftTowards(world, pos, state, face);
+}
+```
+
+Ponder `mechanical_saw/breaker.nbt`: gövde `[2,1,2]`, testere `[3,1,2]
+facing=west`, mil `[4,1,2] axis=x` → testere bitkinin YANINDA, mil ARKADA.
+
+### Düşen itemin yönü
+
+```java
+public void dropItemFromCutTree(BlockPos pos, ItemStack stack) {
+    float distance = (float) Math.sqrt(pos.distSqr(breakingPos));
+    ...
+    entity.setDeltaMovement(Vec3.atLowerCornerOf(breakingPos.subtract(this.worldPosition))
+        .scale(distance / 20f));
+}
+```
+
+→ Item testereden **uzağa** fırlatılır; yükseklik arttıkça hız artar. Toplama
+bandı bu yüzden testerenin karşı tarafına konur.
+
+### Gearbox dallanma sınırı (modül 6'da yakalandı)
+
+`GearboxBlock.hasShaftTowards` = `face.getAxis() != AXIS`. Yani `axis=x` bir
+gearbox yalnız **±Y ve ±Z** yüzlerine şaft verir. Tek bir gearbox ile aynı anda
+X, Y ve Z'ye dallanmak mümkün değildir — üç eksene birden gitmek için iki
+gearbox gerekir. Doğrulayıcı bunu "3 ayrı kinetik ağ" olarak raporlayarak
+yakaladı.

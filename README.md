@@ -4,7 +4,7 @@ Create 6.x için modüler, büyük ölçekli bir fabrika kompleksinin WorldEdit
 şematiklerini üreten Python projesi. Her modül ayrı bir `.schem` dosyasıdır ve
 tek başına paste edilip test edilebilir.
 
-**Durum:** Modül 1-5 hazır. Modül 6-7 sırada.
+**Durum:** Modül 1-6 hazır. Modül 7 sırada.
 
 ---
 
@@ -140,7 +140,7 @@ malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 | 3 | Alaşım (andesite alloy, brass) | `out/03_alloy.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-03-alasim.md) |
 | 4 | Mekanizma (precision mechanism) | `out/04_mechanism.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-04-mekanizma.md) |
 | 5 | Depolama + sıralama (vault dizisi, filtreli funnel) | `out/05_storage.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-05-depolama.md) |
-| 6 | Tarım (ağaç, kaktüs/bambu, buğday) | | beklemede |
+| 6 | Tarım (ağaç, bambu, şeker kamışı) | `out/06_farm.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-06-tarim.md) |
 | 7 | Yardımcı (sıvı sistemleri, sequenced assembly) | | beklemede |
 
 ---
@@ -159,6 +159,7 @@ createfactory/
     alloy.py       # Modül 3
     mechanism.py   # Modül 4
     storage.py     # Modül 5
+    farm.py        # Modül 6
 build.py           # CLI
 docs/
   modul-01-guc.md          # modül dokümanları
@@ -166,6 +167,7 @@ docs/
   modul-03-alasim.md
   modul-04-mekanizma.md
   modul-05-depolama.md
+  modul-06-tarim.md
   create-6-dogrulama.md    # her sayının kaynak koddaki karşılığı
 ```
 

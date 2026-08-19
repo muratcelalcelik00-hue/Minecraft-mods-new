@@ -122,6 +122,9 @@ def rotation_axis(bid: str, props: dict[str, str]) -> str | None:
     if bid == "create:belt":
         # bandın kasnak ekseni, bandın gidiş yönüne DİK yatay eksendir
         return "z" if DIR_AXIS[props["facing"]] == "x" else "x"
+    if bid == "create:mechanical_saw":
+        # yatay testere: dönme ekseni = facing ekseni
+        return DIR_AXIS[props["facing"]]
     if bid in ("create:water_wheel", "create:mechanical_pump", "create:encased_fan"):
         return DIR_AXIS[props["facing"]]
     if bid == "create:deployer":
@@ -149,6 +152,7 @@ def is_kinetic(bid: str) -> bool:
         "create:encased_fan",
         "create:mechanical_mixer",
         "create:belt",
+        "create:mechanical_saw",
     }
 
 
@@ -164,6 +168,9 @@ def has_shaft_towards(w: World, pos: Pos, direction: str) -> bool:
         if props.get("part") not in ("start", "end", "pulley"):
             return False
         return DIR_AXIS[direction] == rotation_axis(bid, props)
+    if bid == "create:mechanical_saw":
+        # yatay testereye mil YALNIZ arkadan takılır
+        return direction == OPPOSITE[props["facing"]]
     if bid == "create:gearbox":
         return DIR_AXIS[direction] != props["axis"]
     axis = rotation_axis(bid, props)
@@ -383,7 +390,12 @@ def check_deployers(w: World, rep: Report) -> None:
       - bant / depot  (sequenced assembly, deploying; modül 4)
     Besleme: chute / smart chute (üstten) ya da bitişik funnel.
     """
-    TARGETS = {"create:blaze_burner", "create:belt", "create:depot"}
+    TARGETS = {
+        "create:blaze_burner", "create:belt", "create:depot",
+        # ekim yapan deployer'lar: hedef fidan/bitki konumudur
+        "minecraft:oak_sapling", "minecraft:spruce_sapling", "minecraft:birch_sapling",
+        "minecraft:bamboo", "minecraft:sugar_cane", "minecraft:wheat",
+    }
     FEEDERS = {"create:chute", "create:smart_chute", "create:andesite_funnel",
                "create:brass_funnel", "create:andesite_belt_funnel", "create:brass_belt_funnel"}
     bad = 0
