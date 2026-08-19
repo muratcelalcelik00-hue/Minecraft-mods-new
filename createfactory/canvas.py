@@ -134,6 +134,79 @@ class Canvas:
             placed.append(p)
         return placed
 
+    def set_if_empty(self, pos: Pos, block: str) -> bool:
+        """Yalnız boşsa yazar. Bina kabuğu makinelerin üstüne taşmasın diye."""
+        pos = (int(pos[0]), int(pos[1]), int(pos[2]))
+        if pos in self._blocks:
+            return False
+        self._blocks[pos] = block
+        return True
+
+    def merge(self, other: "Canvas", offset: Pos, *, prefix: str = "") -> None:
+        """Başka bir modülü, kendi min köşesi `offset` olacak şekilde ekler.
+
+        Modülün giriş/çıkış noktaları da kaydırılarak manifest'e taşınır.
+        """
+        lo, _ = other.bounds
+        for pos, blk in other.blocks().items():
+            self.set(
+                (pos[0] - lo[0] + offset[0], pos[1] - lo[1] + offset[1], pos[2] - lo[2] + offset[2]),
+                blk,
+            )
+        for p in other.manifest.io:
+            self.manifest.io.append(
+                IOPoint(
+                    f"{prefix}{p.name}",
+                    (p.pos[0] - lo[0] + offset[0], p.pos[1] - lo[1] + offset[1],
+                     p.pos[2] - lo[2] + offset[2]),
+                    p.kind,
+                    p.note,
+                )
+            )
+
+    def route_shaft(self, points: list[Pos]) -> None:
+        """Ortogonal bir polyline boyunca şaft döşer, köşelere gearbox koyar.
+
+        Ardışık iki nokta yalnız TEK eksende farklı olmalı. Bir köşede
+        A ekseninden B eksenine dönerken gearbox'ın ekseni ÜÇÜNCÜ eksendir:
+        `GearboxBlock.hasShaftTowards` = `face.getAxis() != AXIS`, yani
+        axis=C olan gearbox yalnız A ve B yüzlerine şaft verir.
+        """
+        from . import blocks as B
+
+        # sıfır uzunluklu segmentleri at (hedef zaten o eksende hizalıysa)
+        cleaned: list[Pos] = []
+        for p in points:
+            if not cleaned or tuple(p) != tuple(cleaned[-1]):
+                cleaned.append(tuple(p))
+        points = cleaned
+
+        axes = []
+        for a, b in zip(points, points[1:]):
+            diff = [b[i] - a[i] for i in range(3)]
+            nz = [i for i, d in enumerate(diff) if d != 0]
+            if len(nz) != 1:
+                raise ValueError(f"segment tek eksende olmalı: {a} -> {b}")
+            axes.append("xyz"[nz[0]])
+
+        for seg, (a, b) in enumerate(zip(points, points[1:])):
+            axis = axes[seg]
+            i = "xyz".index(axis)
+            step = 1 if b[i] > a[i] else -1
+            cur = list(a)
+            # ilk segment kendi başlangıcını da döşer; sonrakiler köşeden
+            # bir adım sonra başlar, yoksa önceki köşenin gearbox'ını ezerler
+            if seg > 0:
+                cur[i] += step
+            while cur[i] != b[i]:
+                self.set(tuple(cur), B.shaft(axis))
+                cur[i] += step
+            if seg + 1 < len(axes):
+                third = ({"x", "y", "z"} - {axis, axes[seg + 1]}).pop()
+                self.set(tuple(b), B.gearbox(third))
+            else:
+                self.set(tuple(b), B.shaft(axis))
+
     # -- manifest ---------------------------------------------------------
 
     def io(self, name: str, pos: Pos, kind: str, note: str = "") -> None:

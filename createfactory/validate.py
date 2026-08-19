@@ -335,17 +335,15 @@ def check_boiler(w: World, rep: Report) -> int:
     # burner'lar tabanın bir altında ve taban ayak izinin İÇİNDE olmalı
     y0 = min(ys)
     heat = 0
-    strays = 0
     for p, (bid, props) in w.parsed.items():
+        # Yalnız kazanın ayak izi altındakiler sayılır. Birleşik komplekste
+        # başka modüllerin burner'ları da var (fan eritme, pirinç basin'i);
+        # onlar burada "kayıp" değil, başka işin parçası.
         if bid != "create:blaze_burner":
             continue
-        inside = p[1] == y0 - 1 and p[0] in xs and p[2] in zs
-        if not inside:
-            strays += 1
+        if not (p[1] == y0 - 1 and p[0] in xs and p[2] in zs):
             continue
         heat += {"seething": 2, "kindled": 1, "fading": 1}.get(props.get("blaze"), 0)
-    if strays:
-        rep.error(f"{strays} blaze burner kazan ayak izinin dışında (ısı vermez)")
     if heat < 18:
         rep.error(f"toplam ısı {heat} < 18")
     else:

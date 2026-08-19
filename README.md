@@ -4,7 +4,8 @@ Create 6.x için modüler, büyük ölçekli bir fabrika kompleksinin WorldEdit
 şematiklerini üreten Python projesi. Her modül ayrı bir `.schem` dosyasıdır ve
 tek başına paste edilip test edilebilir.
 
-**Durum:** 7 modülün tamamı hazır ve doğrulanıyor.
+**Durum:** 7 modülün tamamı hazır, ayrıca hepsini bir fabrika binasında
+birleştiren **birleşik kompleks** (`out/00_complex.*`) üretiliyor.
 
 ---
 
@@ -135,6 +136,7 @@ malzemesi gerekir**; hızlı test için C yolu çok daha pratik.
 
 | # | Modül | Dosya | Durum |
 |---|---|---|---|
+| **0** | **Birleşik kompleks (7 modül + fabrika binası)** | `out/00_complex.schem` / `.nbt` | ✅ hazır — [doküman](docs/00-birlesik-kompleks.md) |
 | 1 | Güç (boiler + engine bankası + ana şaft hattı) | `out/01_power.schem` | ✅ hazır — [doküman](docs/modul-01-guc.md) |
 | 2 | Cevher işleme (crushing → washing → bulk smelting) | `out/02_ore.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-02-cevher.md) |
 | 3 | Alaşım (andesite alloy, brass) | `out/03_alloy.schem` / `.nbt` | ✅ hazır — [doküman](docs/modul-03-alasim.md) |
@@ -161,6 +163,7 @@ createfactory/
     storage.py     # Modül 5
     farm.py        # Modül 6
     press.py       # Modül 7
+    complex.py     # Birleşik kompleks + bina
 build.py           # CLI
 docs/
   modul-01-guc.md          # modül dokümanları
@@ -170,6 +173,7 @@ docs/
   modul-05-depolama.md
   modul-06-tarim.md
   modul-07-pres.md
+  00-birlesik-kompleks.md
   create-6-dogrulama.md    # her sayının kaynak koddaki karşılığı
 ```
 
