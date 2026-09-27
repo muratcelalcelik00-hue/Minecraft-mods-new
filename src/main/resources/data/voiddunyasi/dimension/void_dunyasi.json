@@ -1,7 +1,7 @@
 {
   "type": "voiddunyasi:void_dunyasi",
   "generator": {
-    "type": "minecraft:flat",
+    "type": "voiddunyasi:sinirli_duz",
     "settings": {
       "biome": "voiddunyasi:bos_duzluk",
       "features": false,

@@ -1,5 +1,6 @@
 package com.mrvoid.voiddunyasi;
 
+import com.mrvoid.voiddunyasi.sinir.SinirVerisi;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -43,7 +44,15 @@ public class AsaItem extends Item {
             return InteractionResultHolder.fail(stack);
         }
 
-        BlockPos varis = guvenliKonum(hedef, oyuncu.getBlockX(), oyuncu.getBlockZ());
+        int hx = oyuncu.getBlockX();
+        int hz = oyuncu.getBlockZ();
+        if (hedefKey.equals(VoidDunyasi.VOID_BOYUTU)) {
+            // Sınırın dışına düşmesin: merkeze doğru çekip sınırın 16 blok içine getir.
+            int[] ic = SinirVerisi.iceriCek(hx, hz, 16);
+            hx = ic[0];
+            hz = ic[1];
+        }
+        BlockPos varis = guvenliKonum(hedef, hx, hz);
 
         yarikPartikulu(kaynak, oyuncu.getX(), oyuncu.getY(), oyuncu.getZ());
 

@@ -5,5 +5,7 @@
   "itemGroup.voiddunyasi": "Mr Void'in Dünyası",
   "block.voiddunyasi.muhur": "Mühür",
   "entity.voiddunyasi.asker": "Soldier",
-  "item.voiddunyasi.asker_spawn_egg": "Soldier Spawn Egg"
+  "item.voiddunyasi.asker_spawn_egg": "Soldier Spawn Egg",
+  "komut.voiddunyasi.genislet": "The Void world's radius was expanded to %s blocks.",
+  "komut.voiddunyasi.sinir": "The Void world's radius: %s blocks"
 }
