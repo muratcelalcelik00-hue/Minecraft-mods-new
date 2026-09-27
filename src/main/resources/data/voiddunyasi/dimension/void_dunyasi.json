@@ -1,0 +1,18 @@
+{
+  "type": "voiddunyasi:void_dunyasi",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "voiddunyasi:bos_duzluk",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        { "block": "minecraft:bedrock", "height": 1 },
+        { "block": "voiddunyasi:bilinmeyen_madde", "height": 60 }
+      ],
+      "structure_overrides": [
+        "voiddunyasi:seyrek_koyler"
+      ]
+    }
+  }
+}
