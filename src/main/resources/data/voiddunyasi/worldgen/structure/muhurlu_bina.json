@@ -1,0 +1,8 @@
+{
+  "type": "voiddunyasi:ordu_binasi",
+  "bina": "muhurlu_bina",
+  "biomes": "voiddunyasi:bos_duzluk",
+  "step": "surface_structures",
+  "terrain_adaptation": "none",
+  "spawn_overrides": {}
+}

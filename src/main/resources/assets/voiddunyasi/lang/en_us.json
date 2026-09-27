@@ -2,5 +2,8 @@
   "block.voiddunyasi.bilinmeyen_madde": "Bilinmeyen Madde",
   "item.voiddunyasi.asa": "Asa",
   "item.voiddunyasi.asa.boyut_yok": "Target dimension not found!",
-  "itemGroup.voiddunyasi": "Mr Void'in Dünyası"
+  "itemGroup.voiddunyasi": "Mr Void'in Dünyası",
+  "block.voiddunyasi.muhur": "Mühür",
+  "entity.voiddunyasi.asker": "Soldier",
+  "item.voiddunyasi.asker_spawn_egg": "Soldier Spawn Egg"
 }

@@ -2,5 +2,8 @@
   "block.voiddunyasi.bilinmeyen_madde": "Bilinmeyen Madde",
   "item.voiddunyasi.asa": "Asa",
   "item.voiddunyasi.asa.boyut_yok": "Hedef boyut bulunamadı!",
-  "itemGroup.voiddunyasi": "Mr Void'in Dünyası"
+  "itemGroup.voiddunyasi": "Mr Void'in Dünyası",
+  "block.voiddunyasi.muhur": "Mühür",
+  "entity.voiddunyasi.asker": "Asker",
+  "item.voiddunyasi.asker_spawn_egg": "Asker Çağırma Yumurtası"
 }
