@@ -7,5 +7,8 @@
   "entity.voiddunyasi.asker": "Soldier",
   "item.voiddunyasi.asker_spawn_egg": "Soldier Spawn Egg",
   "komut.voiddunyasi.genislet": "The Void world's radius was expanded to %s blocks.",
-  "komut.voiddunyasi.sinir": "The Void world's radius: %s blocks"
+  "komut.voiddunyasi.sinir": "The Void world's radius: %s blocks",
+  "komut.voiddunyasi.alarm": "Silent alarm: %s soldiers woken toward %s.",
+  "komut.voiddunyasi.alarm_oyuncu_yok": "No player nearby.",
+  "komut.voiddunyasi.sakin": "%s soldiers are returning home."
 }

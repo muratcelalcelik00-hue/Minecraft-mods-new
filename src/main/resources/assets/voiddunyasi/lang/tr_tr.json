@@ -7,5 +7,8 @@
   "entity.voiddunyasi.asker": "Asker",
   "item.voiddunyasi.asker_spawn_egg": "Asker Çağırma Yumurtası",
   "komut.voiddunyasi.genislet": "Void dünyasının yarıçapı %s bloğa genişletildi.",
-  "komut.voiddunyasi.sinir": "Void dünyasının yarıçapı: %s blok"
+  "komut.voiddunyasi.sinir": "Void dünyasının yarıçapı: %s blok",
+  "komut.voiddunyasi.alarm": "Sessiz alarm: %s asker %s oyuncusuna doğru uyandırıldı.",
+  "komut.voiddunyasi.alarm_oyuncu_yok": "Yakında oyuncu yok.",
+  "komut.voiddunyasi.sakin": "%s asker evine dönüyor."
 }

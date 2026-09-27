@@ -26,6 +26,11 @@ public class CanliEngelleyici {
             return;
         }
 
+        // Tuzak testi için bilerek düşman yapılmış canlılar (etiketler NBT'den bu olaydan önce yüklenir).
+        if (entity.getTags().contains(Dusman.ETIKET)) {
+            return;
+        }
+
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         if (id != null && VoidDunyasi.MODID.equals(id.getNamespace())) {
             return;
