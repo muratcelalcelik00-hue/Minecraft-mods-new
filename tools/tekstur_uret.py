@@ -139,6 +139,86 @@ def asa():
     print("yazıldı:", yol)
 
 
+def muhur():
+    """Çok koyu, neredeyse siyah, tamamen düz; hiçbir desen yok."""
+    img = Image.new("RGBA", (BOYUT, BOYUT), (11, 10, 13, 255))
+    yol = os.path.join(KOK, "block", "muhur.png")
+    img.save(yol)
+    print("yazıldı:", yol)
+
+
+def asker():
+    """64x64 oyuncu skin düzeninde, koyu gri/siyah zırhlı, kapalı miğferli asker."""
+    rng = random.Random(4242)
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+
+    def ton(renk, sapma=5):
+        d = rng.randint(-sapma, sapma)
+        return tuple(max(0, min(255, c + d)) for c in renk) + (255,)
+
+    def boya(x, y, w, h, renk, sapma=5, kenar=None):
+        for j in range(h):
+            for i in range(w):
+                c = renk
+                if kenar and (i == 0 or j == 0 or i == w - 1 or j == h - 1):
+                    c = kenar
+                img.putpixel((x + i, y + j), ton(c, sapma))
+
+    def kutu(u, v, w, h, d, renk, kenar=None):
+        """Bir küp parçasının UV açılımı (u,v sol üst; w genişlik, h yükseklik, d derinlik)."""
+        boya(u + d, v, w, d, renk, kenar=kenar)                  # üst
+        boya(u + d + w, v, w, d, renk, kenar=kenar)              # alt
+        boya(u, v + d, d, h, renk, kenar=kenar)                  # sağ
+        boya(u + d, v + d, w, h, renk, kenar=kenar)              # ön
+        boya(u + d + w, v + d, d, h, renk, kenar=kenar)          # sol
+        boya(u + 2 * d + w, v + d, w, h, renk, kenar=kenar)      # arka
+
+    metal = (52, 54, 60)
+    metal_kenar = (36, 37, 42)
+    koyu = (30, 31, 35)
+    siyah = (12, 12, 14)
+    kemer = (20, 18, 17)
+
+    # --- Kafa: kapalı miğfer (8x8x8, uv 0,0)
+    kutu(0, 0, 8, 8, 8, metal, metal_kenar)
+    # Ön yüz (8..16, 8..16): yatay göz yarığı + nefes delikleri; yüz görünmez.
+    for i in range(1, 7):
+        img.putpixel((8 + i, 11), (4, 4, 5, 255))
+    for i in range(1, 7):
+        img.putpixel((8 + i, 12), ton(metal_kenar, 2))
+    img.putpixel((12, 9), ton((70, 72, 78), 2))   # orta sırt
+    img.putpixel((12, 10), ton((70, 72, 78), 2))
+    for (x, yy) in [(10, 14), (12, 14), (14, 14), (11, 15), (13, 15)]:
+        img.putpixel((x - 1, yy), (6, 6, 7, 255))
+
+    # --- Gövde (8x12x4, uv 16,16): göğüs zırhı + kemer
+    kutu(16, 16, 8, 12, 4, koyu)
+    boya(21, 21, 6, 5, metal, kenar=metal_kenar)     # göğüs plakası
+    boya(20, 29, 8, 2, kemer, 3)
+    boya(23, 29, 2, 2, (58, 58, 62), 2)              # toka
+    boya(32, 29, 8, 2, kemer, 3)                     # arka kemer
+
+    # --- Kollar (4x12x4): sağ kol uv 40,16, sol kol uv 32,48
+    for (u, v) in [(40, 16), (32, 48)]:
+        kutu(u, v, 4, 12, 4, koyu)
+        boya(u, v + 4, 16, 3, metal, 4)              # omuzluk
+        boya(u, v + 13, 16, 3, (24, 25, 28), 3)      # eldiven
+
+    # --- Bacaklar (4x12x4): sağ bacak uv 0,16, sol bacak uv 16,48
+    for (u, v) in [(0, 16), (16, 48)]:
+        kutu(u, v, 4, 12, 4, (26, 27, 30))
+        boya(u, v + 8, 16, 2, metal, 4)              # dizlik
+        boya(u, v + 13, 16, 3, siyah, 2)             # çizme
+        boya(u + 8, v, 4, 4, siyah, 2)               # taban
+
+    yol = os.path.join(KOK, "entity", "asker.png")
+    os.makedirs(os.path.dirname(yol), exist_ok=True)
+    img.save(yol)
+    print("yazıldı:", yol)
+
+
 if __name__ == "__main__":
     bilinmeyen_madde()
     asa()
+    muhur()
+    asker()

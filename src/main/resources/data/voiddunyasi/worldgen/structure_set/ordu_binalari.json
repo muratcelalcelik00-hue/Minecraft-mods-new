@@ -1,0 +1,15 @@
+{
+  "structures": [
+    { "structure": "voiddunyasi:ordu_binasi", "weight": 1 }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 10,
+    "separation": 4,
+    "salt": 77113,
+    "exclusion_zone": {
+      "other_set": "voiddunyasi:seyrek_koyler",
+      "chunk_count": 6
+    }
+  }
+}
