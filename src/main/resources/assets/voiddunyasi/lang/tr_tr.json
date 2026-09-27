@@ -5,5 +5,7 @@
   "itemGroup.voiddunyasi": "Mr Void'in Dünyası",
   "block.voiddunyasi.muhur": "Mühür",
   "entity.voiddunyasi.asker": "Asker",
-  "item.voiddunyasi.asker_spawn_egg": "Asker Çağırma Yumurtası"
+  "item.voiddunyasi.asker_spawn_egg": "Asker Çağırma Yumurtası",
+  "komut.voiddunyasi.genislet": "Void dünyasının yarıçapı %s bloğa genişletildi.",
+  "komut.voiddunyasi.sinir": "Void dünyasının yarıçapı: %s blok"
 }

@@ -1,5 +1,9 @@
 package com.mrvoid.voiddunyasi;
 
+import com.mojang.serialization.Codec;
+import com.mrvoid.voiddunyasi.sinir.BoslukOlaylari;
+import com.mrvoid.voiddunyasi.sinir.SinirOlaylari;
+import com.mrvoid.voiddunyasi.sinir.SinirliDuz;
 import com.mrvoid.voiddunyasi.yapi.OrduBinasi;
 import com.mrvoid.voiddunyasi.yapi.OrduBinasiParca;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.MapColor;
@@ -38,6 +43,8 @@ public class VoidDunyasi {
 
     public static final ResourceKey<Level> VOID_BOYUTU =
             ResourceKey.create(Registries.DIMENSION, new ResourceLocation(MODID, "void_dunyasi"));
+    public static final ResourceKey<Level> BOSLUK =
+            ResourceKey.create(Registries.DIMENSION, new ResourceLocation(MODID, "bosluk"));
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
@@ -46,6 +53,10 @@ public class VoidDunyasi {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES = DeferredRegister.create(Registries.STRUCTURE_TYPE, MODID);
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, MODID);
+    public static final DeferredRegister<Codec<? extends ChunkGenerator>> CHUNK_GENERATORS = DeferredRegister.create(Registries.CHUNK_GENERATOR, MODID);
+
+    public static final RegistryObject<Codec<? extends ChunkGenerator>> SINIRLI_DUZ = CHUNK_GENERATORS.register("sinirli_duz",
+            () -> SinirliDuz.CODEC);
 
     public static final RegistryObject<Block> BILINMEYEN_MADDE = BLOCKS.register("bilinmeyen_madde",
             () -> new Block(BlockBehaviour.Properties.of()
@@ -115,9 +126,12 @@ public class VoidDunyasi {
         ENTITIES.register(modBus);
         STRUCTURE_TYPES.register(modBus);
         STRUCTURE_PIECES.register(modBus);
+        CHUNK_GENERATORS.register(modBus);
         modBus.addListener(this::ozellikKaydet);
 
         MinecraftForge.EVENT_BUS.register(new CanliEngelleyici());
+        MinecraftForge.EVENT_BUS.register(new SinirOlaylari());
+        MinecraftForge.EVENT_BUS.register(new BoslukOlaylari());
     }
 
     private void ozellikKaydet(EntityAttributeCreationEvent event) {

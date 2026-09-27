@@ -1,0 +1,13 @@
+{
+  "type": "voiddunyasi:bosluk",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "voiddunyasi:bosluk",
+      "features": false,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}
