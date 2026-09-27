@@ -138,7 +138,6 @@ public class OrduBinasiParca extends StructurePiece {
     private static CompoundTag spawnerVerisi() {
         CompoundTag canli = new CompoundTag();
         canli.putString("id", VoidDunyasi.MODID + ":asker");
-        canli.putBoolean("NoAI", true);
         canli.putBoolean("PersistenceRequired", true);
 
         CompoundTag spawnData = new CompoundTag();
@@ -253,7 +252,6 @@ public class OrduBinasiParca extends StructurePiece {
             asker.moveTo(k[0] + 0.5D, y, k[1] + 0.5D, yaw, 0.0F);
             asker.setYHeadRot(yaw);
             asker.setYBodyRot(yaw);
-            asker.setNoAi(true);
             asker.setPersistenceRequired();
             level.addFreshEntityWithPassengers(asker);
         }

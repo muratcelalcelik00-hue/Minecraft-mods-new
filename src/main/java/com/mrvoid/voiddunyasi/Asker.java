@@ -1,6 +1,5 @@
 package com.mrvoid.voiddunyasi;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
@@ -15,12 +14,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-/** Hiç kıpırdamayan, ses çıkarmayan, hasar almayan asker. */
+/** Yerinden kıpırdamayan, ses çıkarmayan, hasar almayan asker. */
 public class Asker extends PathfinderMob {
 
     public Asker(EntityType<? extends Asker> type, Level level) {
         super(type, level);
-        this.setNoAi(true);
     }
 
     public static AttributeSupplier.Builder ozellikler() {
@@ -34,10 +32,14 @@ public class Asker extends PathfinderMob {
     protected void registerGoals() {
     }
 
+    /** Hiç yürümez/zıplamaz; yerçekimi ve düşme normal çalışır. */
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        this.setNoAi(true);
+    public void aiStep() {
+        this.xxa = 0.0F;
+        this.yya = 0.0F;
+        this.zza = 0.0F;
+        this.setJumping(false);
+        super.aiStep();
     }
 
     /** Yalnızca /kill (ve dünya dışı) gibi dokunulmazlığı delen hasarlar işler. */
