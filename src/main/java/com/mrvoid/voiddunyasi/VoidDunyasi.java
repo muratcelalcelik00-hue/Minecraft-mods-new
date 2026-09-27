@@ -132,6 +132,7 @@ public class VoidDunyasi {
         MinecraftForge.EVENT_BUS.register(new CanliEngelleyici());
         MinecraftForge.EVENT_BUS.register(new SinirOlaylari());
         MinecraftForge.EVENT_BUS.register(new BoslukOlaylari());
+        MinecraftForge.EVENT_BUS.register(new TuzakSistemi());
     }
 
     private void ozellikKaydet(EntityAttributeCreationEvent event) {
